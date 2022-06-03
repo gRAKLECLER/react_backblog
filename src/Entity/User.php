@@ -38,10 +38,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private $password;
 
     /**
-     * @ORM\OneToOne(targetEntity=Articles::class, cascade={"persist", "remove"})
+     * @ORM\OneToMany(mappedBy="user", targetEntity=Articles::class)
      * @ORM\JoinColumn(nullable=true)
      */
     private $articles;
+
+    private $username;
 
     public function getId(): ?int
     {
@@ -140,6 +142,27 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setUser(?Articles $articles): self
     {
         $this->articles = $articles;
+
+        return $this;
+    }
+
+    public function addArticles(Articles $articles): self
+    {
+        if (!$this->articles->contains($articles)) {
+            $this->$articles[] = $articles;
+            $articles->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeArticles(Articles $articles): self
+    {
+        if ($this->articles->removeElement($articles)) {
+            if ($articles->getUser() === $this) {
+                $articles->setUser(null);
+            }
+        }
 
         return $this;
     }

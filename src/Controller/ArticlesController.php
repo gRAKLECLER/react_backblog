@@ -4,40 +4,69 @@ namespace App\Controller;
 
 use App\Entity\Articles;
 use App\Repository\ArticlesRepository;
+use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
-use http\Env\Response;
+use Doctrine\ORM\ORMException;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Security;
 
-class ArticlesController
+class ArticlesController extends AbstractController
 {
-    private Security $security;
+    private $entityManager;
+    private $security;
+    private $articlesRepository;
+    private $userRepository;
 
-    public function __construct(Security $security)
+    public function  __construct(EntityManagerInterface $entityManager, Security $security, ArticlesRepository $articlesRepository,
+                                 UserRepository $userRepository)
     {
+        $this->entityManager = $entityManager;
         $this->security = $security;
+        $this->articlesRepository = $articlesRepository;
+        $this->userRepository = $userRepository;
     }
 
-    public function create(EntityManagerInterface $entityManager, Request $request): Response
+    /**
+     * @param Request $request
+     * @Route("/api/create_article", name="app_api_create")
+     */
+    public function create(Request $request): void
     {
-        $articles = new Articles();
+        $data = json_decode($request->getContent(), true);
 
-        if ($_COOKIE['userId'] == $this->security->getUser()){
-            $articles->setTitle($request->request->get('title'))
-                ->setContent($request->request->get('content'))
-                ->setUser($_COOKIE[]);
+        $tokenParts = explode(".", $data['token']);
+        $tokenPayload = base64_decode($tokenParts[1]);
+        $jwtPayload = json_decode($tokenPayload);
+        $username = $jwtPayload->username;
 
+        $user = $this->userRepository->findBy(['email' => $username]);
 
-            $entityManager->persist($articles);
-            $entityManager->flush();
+        $post = new Articles();
+
+        $post->setTitle($data['title'])
+            ->setContent($data['content'])
+            ->setUser($user[0]);
+
+        try {
+            $this->entityManager->persist($post);
+            $this->entityManager->flush();
+
+            echo 'success';
+            die;
+        } catch (ORMException $e) {  echo $e;
         }
-
-        return $this->redirectToRoute('');
     }
 
-    public function getAllArticles(ArticlesRepository $articlesRepository): array
-    {
-        return $articlesRepository->findAll();
+
+    /**
+     * @param Request $request
+     * @return Articles[]
+     * @Route("/api/articles", name="app_articles")
+     */
+    public function getAll(Request $request) {
+        return $this->articlesRepository->findAll();
     }
 
 }

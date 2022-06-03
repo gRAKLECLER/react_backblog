@@ -12,18 +12,18 @@ use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 
 class SecurityController extends AbstractController
 {
-    private TokenManager $tokenManager;
-
-    private UserRepository $userRepository;
-
-    private CookieManager $cookieManager;
-
-    public function __construct(TokenManager $tokenManager, UserRepository $userRepository, CookieManager $cookieManager)
-    {
-        $this->tokenManager = $tokenManager;
-        $this->userRepository = $userRepository;
-        $this->cookieManager = $cookieManager;
-    }
+//    private TokenManager $tokenManager;
+//
+//    private UserRepository $userRepository;
+//
+//    private CookieManager $cookieManager;
+//
+//    public function __construct(TokenManager $tokenManager, UserRepository $userRepository, CookieManager $cookieManager)
+//    {
+//        $this->tokenManager = $tokenManager;
+//        $this->userRepository = $userRepository;
+//        $this->cookieManager = $cookieManager;
+//    }
 
     /**
      * @Route("/login", name="app_login")
@@ -35,16 +35,16 @@ class SecurityController extends AbstractController
         // }
 
         // get the login error if there is one
-        $error = $authenticationUtils->getLastAuthenticationError();
-        // last username entered by the user
-        $lastUsername = $authenticationUtils->getLastUsername();
-
-        $user = $this->userRepository->find($lastUsername);
-
-        $token = $this->tokenManager->generateJWT($user);
-        $this->cookieManager->cookieHelper($token);
-
-        return $this->render('security/login.html.twig', ['last_username' => $lastUsername, 'error' => $error]);
+//        $error = $authenticationUtils->getLastAuthenticationError();
+//        // last username entered by the user
+//        $lastUsername = $authenticationUtils->getLastUsername();
+//
+//        $user = $this->userRepository->find($lastUsername);
+//
+//        $token = $this->tokenManager->generateJWT($user);
+//        $this->cookieManager->cookieHelper($token);
+//
+//        return $this->render('security/login.html.twig', ['last_username' => $lastUsername, 'error' => $error]);
     }
 
     /**
